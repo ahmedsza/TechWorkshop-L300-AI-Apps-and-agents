@@ -23,7 +23,7 @@ COPY . .
 
 # Accept ENV_CONTENT as a build argument and create .env file
 ARG ENV_CONTENT
-RUN if [ -n "$ENV_CONTENT" ]; then echo "$ENV_CONTENT" > .env; else echo "Warning: ENV_CONTENT not provided" >&2; fi
+RUN if [ -n "$ENV_CONTENT" ]; then printf '%s\n' "$ENV_CONTENT" > .env; else echo "Warning: ENV_CONTENT not provided" >&2; fi
 
 # Expose the port (default FastAPI/uvicorn port)
 EXPOSE 8000
