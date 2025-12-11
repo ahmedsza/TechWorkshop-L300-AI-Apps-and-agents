@@ -27,9 +27,9 @@ jobs:
     
     env:
       # Configure these values for your Azure Container Registry
-      ACR_LOGIN_SERVER: myregistry.azurecr.io  # TODO: Replace with your ACR login server
-      IMAGE_NAME: techworkshop-app              # TODO: Replace with your desired image name
-      IMAGE_TAG: ${{ github.sha }}              # Uses the Git commit SHA as the tag
+      ACR_LOGIN_SERVER: yzxkcfqhpa34ocosureg.azurecr.io  # TODO: Replace with your ACR login server
+      IMAGE_NAME: chat-app           # TODO: Replace with your desired image name
+      IMAGE_TAG: latest             # Uses the Git commit SHA as the tag
     
     steps:
       - name: Checkout repository
