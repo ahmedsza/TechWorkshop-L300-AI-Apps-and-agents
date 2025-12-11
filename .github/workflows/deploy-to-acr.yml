@@ -36,11 +36,6 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
-      - name: Create temporary .env file for build
-        run: |
-          echo "${{ secrets.ENV }}" > /tmp/build_env_content.txt
-        shell: bash
-
       - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
@@ -55,12 +50,6 @@ jobs:
             ENV_CONTENT=${{ secrets.ENV }}
           cache-from: type=registry,ref=${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:buildcache
           cache-to: type=registry,ref=${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
-
-      - name: Clean up temporary files
-        if: always()
-        run: |
-          rm -f /tmp/build_env_content.txt
-        shell: bash
 
       - name: Image Details
         run: |
