@@ -43,25 +43,19 @@ class StorageManager:
         if not self.storage_account_name:
             raise ValueError("storage_account_name is required")
         
-        account_url = f"https://{self.storage_account_name}.blob.core.windows.net"
+        # Check if connection string is available (for local development)
+        blob_connection_string = os.getenv("blob_connection_string", "")
         
-        try:
-            # Try Managed Identity first (works in AI Foundry, App Service, etc.)
-            logger.info("Attempting authentication with DefaultAzureCredential (Managed Identity)")
+        if blob_connection_string:
+            # Use connection string for local development
+            logger.info("Using connection string authentication for local development")
+            return BlobServiceClient.from_connection_string(blob_connection_string)
+        else:
+            # Use Managed Identity for cloud environments (AI Foundry, App Service, etc.)
+            logger.info("Using DefaultAzureCredential (Managed Identity) authentication")
+            account_url = f"https://{self.storage_account_name}.blob.core.windows.net"
             credential = DefaultAzureCredential()
             return BlobServiceClient(account_url=account_url, credential=credential)
-            
-        except ClientAuthenticationError as e:
-            logger.warning(f"Managed Identity authentication failed: {e}")
-            
-            # Fallback to connection string for local development
-            blob_connection_string = os.getenv("blob_connection_string", "")
-            if blob_connection_string:
-                logger.info("Falling back to connection string authentication")
-                return BlobServiceClient.from_connection_string(blob_connection_string)
-            else:
-                logger.error("No valid authentication method available")
-                raise Exception("No valid authentication method available for Azure Blob Storage")
     
     def upload_blob(self, blob_name: str, data: BinaryIO, content_type: str = None, overwrite: bool = True) -> str:
         """
