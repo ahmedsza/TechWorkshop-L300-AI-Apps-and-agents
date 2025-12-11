@@ -14,9 +14,7 @@
 name: Build and Deploy to Azure Container Registry
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   build-and-push:
