@@ -22,6 +22,12 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     
+    env:
+      # Configure these values for your Azure Container Registry
+      ACR_LOGIN_SERVER: myregistry.azurecr.io  # TODO: Replace with your ACR login server
+      IMAGE_NAME: techworkshop-app              # TODO: Replace with your desired image name
+      IMAGE_TAG: ${{ github.sha }}              # Uses the Git commit SHA as the tag
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -56,9 +62,3 @@ jobs:
           echo "Image pushed successfully!"
           echo "Image: ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
           echo "Image: ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest"
-
-env:
-  # Configure these values for your Azure Container Registry
-  ACR_LOGIN_SERVER: myregistry.azurecr.io  # TODO: Replace with your ACR login server
-  IMAGE_NAME: techworkshop-app              # TODO: Replace with your desired image name
-  IMAGE_TAG: ${{ github.sha }}              # Uses the Git commit SHA as the tag
