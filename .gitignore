@@ -53,7 +53,7 @@ out/
 .azure-pipelines.yml
 *.azuredevops
 
-# Github
-.github/
+# Github (ignore agents directory but allow workflows)
+.github/agents/
 parameters.json
 .azure
