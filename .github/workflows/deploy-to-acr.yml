@@ -1,0 +1,75 @@
+# GitHub Actions Workflow to Build and Deploy Docker Image to Azure Container Registry
+#
+# Prerequisites:
+# 1. Set up the following GitHub Secrets in your repository settings:
+#    - ACR_USERNAME: Azure Container Registry username (service principal ID or admin username)
+#    - ACR_PASSWORD: Azure Container Registry password (service principal password or admin password)
+#    - ENV: Content of your .env file (all environment variables as a multi-line string)
+#
+# 2. Update the environment variables below with your ACR details:
+#    - ACR_LOGIN_SERVER: Your ACR login server (e.g., myregistry.azurecr.io)
+#    - IMAGE_NAME: Desired name for your Docker image
+#    - IMAGE_TAG: Tag for your Docker image (default is the commit SHA)
+
+name: Build and Deploy to Azure Container Registry
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Azure Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Create temporary .env file for build
+        run: |
+          echo "${{ secrets.ENV }}" > /tmp/build_env_content.txt
+        shell: bash
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src
+          file: ./src/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest
+          build-args: |
+            ENV_CONTENT=${{ secrets.ENV }}
+          cache-from: type=registry,ref=${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+
+      - name: Clean up temporary files
+        if: always()
+        run: |
+          rm -f /tmp/build_env_content.txt
+        shell: bash
+
+      - name: Image Details
+        run: |
+          echo "Image pushed successfully!"
+          echo "Image: ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
+          echo "Image: ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest"
+
+env:
+  # Configure these values for your Azure Container Registry
+  ACR_LOGIN_SERVER: myregistry.azurecr.io  # TODO: Replace with your ACR login server
+  IMAGE_NAME: techworkshop-app              # TODO: Replace with your desired image name
+  IMAGE_TAG: ${{ github.sha }}              # Uses the Git commit SHA as the tag
